@@ -49,20 +49,39 @@ def quadratic_multiply(x, y):
     return _quadratic_multiply(x,y).decimal_val
 
 def _quadratic_multiply(x, y):
-    ### TODO
-    pass
-    ###
+    xvec = x.binary_vec             # store binary vector representation of x in xvec
+    yvec = y.binary_vec             # store binary vector representation of y in yvec
+
+    xvec, yvec = pad(xvec, yvec)    # pad xvec and yvec if length is not the same
+
+    # base case: if both x and y are <= 1, return their product as a BinaryNumber
+    if x.decimal_val <= 1 and y.decimal_val <= 1:
+        return BinaryNumber(x.decimal_val * y.decimal_val)
+
+    x_left, x_right = split_number(xvec)    # split xvec and store left and right halves into x_left and x_right
+    y_left, y_right = split_number(yvec)    # split yvec and store left and right halves into y_left and y_right
+
+    n = len(xvec)       # get the total number of bits after padding
+
+    # compute the three parts of the sum
+    first = _quadratic_multiply(x_left, y_left)                                             # x_left * y_left
+    second = _quadratic_multiply(BinaryNumber(x_left.decimal_val + x_right.decimal_val),
+                                 BinaryNumber(y_left.decimal_val + y_right.decimal_val))    # (x_left + x_right) * (y_left + y_right)
+    third = _quadratic_multiply(x_right, y_right)                                           # x_right * y_right
+
+    # apply bit_shift for powers of 2 in the formula
+    shifted_first = bit_shift(first, n)  # 2^n * first
+    shifted_second = bit_shift(BinaryNumber(second.decimal_val - first.decimal_val - third.decimal_val), n // 2) # 2^(n/2) * (second - first - third)
+
+    # return sum of the three parts as a BinaryNumber
+    return BinaryNumber(shifted_first.decimal_val + shifted_second.decimal_val + third.decimal_val)
 
 
     
     
-def test_quadratic_multiply(x, y, f):
+def time_quadratic_multiply(x, y, f):
     start = time.time()
     # multiply two numbers x, y using function f
-    
+    f(x, y)
     return (time.time() - start)*1000
-
-
-    
-    
 
